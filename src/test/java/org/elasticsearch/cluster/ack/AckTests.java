@@ -134,46 +134,6 @@ public class AckTests extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testClusterRerouteAcknowledgement() throws InterruptedException {
-        client().admin().indices().prepareCreate("test")
-                .setSettings(settingsBuilder()
-                        .put("number_of_shards", atLeast(cluster().numNodes()))
-                        .put("number_of_replicas", 0)).get();
-        ensureGreen();
-
-
-        MoveAllocationCommand moveAllocationCommand = getAllocationCommand();
-
-        ClusterRerouteResponse clusterRerouteResponse = client().admin().cluster().prepareReroute().add(moveAllocationCommand).get();
-        assertThat(clusterRerouteResponse.isAcknowledged(), equalTo(true));
-
-        for (Client client : clients()) {
-            ClusterStateResponse clusterStateResponse = client.admin().cluster().prepareState().setLocal(true).get();
-            RoutingNode routingNode = clusterStateResponse.getState().routingNodes().nodesToShards().get(moveAllocationCommand.fromNode());
-            for (MutableShardRouting mutableShardRouting : routingNode) {
-                //if the shard that we wanted to move is still on the same node, it must be relocating
-                if (mutableShardRouting.shardId().equals(moveAllocationCommand.shardId())) {
-                    assertThat(mutableShardRouting.relocating(), equalTo(true));
-                }
-
-            }
-
-            routingNode = clusterStateResponse.getState().routingNodes().nodesToShards().get(moveAllocationCommand.toNode());
-            boolean found = false;
-            for (MutableShardRouting mutableShardRouting : routingNode) {
-                if (mutableShardRouting.shardId().equals(moveAllocationCommand.shardId())) {
-                    assertThat(mutableShardRouting.state(), anyOf(equalTo(ShardRoutingState.INITIALIZING), equalTo(ShardRoutingState.STARTED)));
-                    found = true;
-                    break;
-                }
-            }
-            assertThat(found, equalTo(true));
-        }
-        //let's wait for the relocation to be completed, otherwise there can be issues with after test checks (mock directory wrapper etc.)
-        waitForRelocation();
-    }
-
-    @Test
     public void testClusterRerouteAcknowledgementDryRun() throws InterruptedException {
         client().admin().indices().prepareCreate("test")
                 .setSettings(settingsBuilder()

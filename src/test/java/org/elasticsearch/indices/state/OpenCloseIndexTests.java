@@ -273,26 +273,6 @@ public class OpenCloseIndexTests extends AbstractIntegrationTest {
         assertThat(openIndexResponse.isAcknowledged(), equalTo(true));
         assertIndexIsOpened("test1", "test2");
     }
-
-    @Test
-    public void testSimpleCloseOpenAcknowledged() {
-        createIndex("test1");
-        ClusterHealthResponse healthResponse = client().admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
-        assertThat(healthResponse.isTimedOut(), equalTo(false));
-
-        CloseIndexResponse closeIndexResponse = client().admin().indices().prepareClose("test1").execute().actionGet();
-        assertThat(closeIndexResponse.isAcknowledged(), equalTo(true));
-        assertIndexIsClosedOnAllNodes("test1");
-
-        OpenIndexResponse openIndexResponse = client().admin().indices().prepareOpen("test1").execute().actionGet();
-        assertThat(openIndexResponse.isAcknowledged(), equalTo(true));
-        assertIndexIsOpenedOnAllNodes("test1");
-
-        //we now set the timeout to 0, which means not wait for acknowledgement from other nodes
-        closeIndexResponse = client().admin().indices().prepareClose("test1").setTimeout(TimeValue.timeValueMillis(0)).execute().actionGet();
-        assertThat(closeIndexResponse.isAcknowledged(), equalTo(false));
-    }
-
     private void assertIndexIsOpened(String... indices) {
         checkIndexState(IndexMetaData.State.OPEN, indices);
     }
