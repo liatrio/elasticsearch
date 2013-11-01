@@ -133,7 +133,7 @@ public class AckTests extends AbstractIntegrationTest {
         }
     }
 
-    @Test
+
     public void testClusterRerouteAcknowledgementDryRun() throws InterruptedException {
         client().admin().indices().prepareCreate("test")
                 .setSettings(settingsBuilder()
