@@ -186,7 +186,7 @@ public class TransportTwoNodesSearchTests extends AbstractIntegrationTest {
         }
     }
 
-    @Test
+
     public void testQueryThenFetchWithFrom() throws Exception {
         Set<String> fullExpectedIds = prepareData();
 
