@@ -10,4 +10,4 @@ env:
   - ES_TEST_LOCAL=false ES_TEST_COMPRESS=true
 
 notifications:
-  email: false
+  email: true
